@@ -46,44 +46,48 @@ def selection(population, num_parents):
         parents.append(max(candidates, key=lambda x: x.fitness))
     return parents
 
-def repair_chess_seq(chess_seq):
+def repair_chess_seq(chess_seq, flip_seq):
     actual_A = chess_seq.count("A")
     actual_B = chess_seq.count("B")
     actual_C = chess_seq.count("C")
-    num_A_to_replace, num_B_to_replace, num_C_to_replace = 0, 0, 0
-    replacements = []
-    if actual_A < chess_countr["A"]:
-        replacements.extend(["A"] * (chess_countr["A"] - actual_A))
-    elif actual_A > chess_countr["A"]:
-        num_A_to_replace = actual_A - chess_countr["A"]
-    if actual_B < chess_countr["B"]:
-        replacements.extend(["B"] * (chess_countr["B"] - actual_B))
-    elif actual_B > chess_countr["B"]:
-        num_B_to_replace = actual_B - chess_countr["B"]
-    if actual_C < chess_countr["C"]:
-        replacements.extend(["C"] * (chess_countr["C"] - actual_C))
-    elif actual_C > chess_countr["C"]:
-        num_C_to_replace = actual_C - chess_countr["C"]
-    if replacements:
-        random.shuffle(replacements)
+
+    num_A_to_remove = actual_A - chess_countr["A"] if actual_A > chess_countr["A"] else 0
+    num_B_to_remove = actual_B - chess_countr["B"] if actual_B > chess_countr["B"] else 0
+    num_C_to_remove = actual_C - chess_countr["C"] if actual_C > chess_countr["C"] else 0
 
     for idx in reversed(range(len(chess_seq))):
-        if chess_seq[idx] == "A" and num_A_to_replace > 0:
-            chess_seq[idx] = replacements.pop()
-            num_A_to_replace -= 1
-        elif chess_seq[idx] == "B" and num_B_to_replace > 0:
-            chess_seq[idx] = replacements.pop()
-            num_B_to_replace -= 1
-        elif chess_seq[idx] == "C" and num_C_to_replace > 0:
-            chess_seq[idx] = replacements.pop()
-            num_C_to_replace -= 1
-        if num_A_to_replace == 0 and num_B_to_replace == 0 and num_C_to_replace == 0:
+        if chess_seq[idx] == "A" and num_A_to_remove > 0:
+            chess_seq.pop(idx)
+            flip_seq.pop(idx)
+            num_A_to_remove -= 1
+        elif chess_seq[idx] == "B" and num_B_to_remove > 0:
+            chess_seq.pop(idx)
+            flip_seq.pop(idx)
+            num_B_to_remove -= 1
+        elif chess_seq[idx] == "C" and num_C_to_remove > 0:
+            chess_seq.pop(idx)
+            flip_seq.pop(idx)
+            num_C_to_remove -= 1
+        if num_A_to_remove == 0 and num_B_to_remove == 0 and num_C_to_remove == 0:
             break
-    if replacements:
-        chess_seq.extend(replacements)
-    return chess_seq
 
-def crossover(parent1, parent2, chessboard_size):
+    replacements = []
+    actual_A = chess_seq.count("A")
+    actual_B = chess_seq.count("B")
+    actual_C = chess_seq.count("C")
+    if actual_A < chess_countr["A"]:
+        replacements.extend(["A"] * ( chess_countr["A"] - actual_A))
+    if actual_B < chess_countr["B"]:
+        replacements.extend(["B"] * ( chess_countr["B"] - actual_B))
+    if actual_C < chess_countr["C"]:
+        replacements.extend(["C"] * ( chess_countr["C"] - actual_C))
+
+    random.shuffle(replacements)
+    chess_seq.extend(replacements)
+    flip_seq.extend([random.getrandbits(1) for _ in range(len(replacements))])
+    return chess_seq, flip_seq
+
+def crossover(parent1, parent2):
     # Crossover start position and angle
     child_start_pos = (
         random.choice([parent1.start_pos[0], parent2.start_pos[0]]),
@@ -93,24 +97,13 @@ def crossover(parent1, parent2, chessboard_size):
 
     # Partial chess sequence crossover (swap middle section)
     # Ensure chess sequence constraints are maintained
-    max_length = len(parent1.chess_seq)
-    parent1_end_index = min(parent1.fitness, max_length)
-    parent2_end_index = min(parent2.fitness, max_length)
-    delta = 0
-    if parent1_end_index + parent2_end_index > max_length:
-        delta = (parent1_end_index + parent2_end_index - max_length + 1 ) // 2
-    # print(f"Parent 1: {parent1_end_index}, Parent 2: {parent2_end_index}, delta: {delta}, Parent length: {max_length}")
-    child_chess_seq = parent1.chess_seq[:parent1_end_index-delta] + parent2.chess_seq[delta:parent2_end_index]
+    cross_point1 = random.randint(0, len(parent1.chess_seq) - 1)
+    cross_point2 = random.randint(cross_point1, len(parent1.chess_seq))
+    child_chess_seq = parent1.chess_seq[:cross_point1] + parent2.chess_seq[cross_point1:cross_point2] + parent1.chess_seq[cross_point2:]
+    child_flip_seq = parent1.flip_seq[:cross_point1] + parent2.flip_seq[cross_point1:cross_point2] + parent1.flip_seq[cross_point2:]
 
     # Repair the chess sequence to maintain counts (this is a placeholder for actual repair logic)
-    repair_chess_seq(child_chess_seq)
-    # Flip sequence crossover
-    child_flip_seq = parent1.flip_seq[:parent1_end_index] + parent2.flip_seq[delta:parent2_end_index]
-    # Repair the flip sequence
-    if len(child_flip_seq) < len(parent1.flip_seq):
-        child_flip_seq.extend([random.getrandbits(1) for _ in range(len(parent1.flip_seq) - len(child_flip_seq))])
-    elif len(child_flip_seq) > len(parent1.flip_seq):
-        child_flip_seq = child_flip_seq[:len(parent1.flip_seq)]
+    child_chess_seq, child_flip_seq = repair_chess_seq(child_chess_seq, child_flip_seq)
     return Individual(child_start_pos, child_start_angle, child_chess_seq, child_flip_seq)
 
 def mutate(individual, mutation_rate):
@@ -134,7 +127,7 @@ def mutate(individual, mutation_rate):
 def genetic_algorithm(population_size=100, max_generations=100):
     chessboard_size = (6, 6)
     mutation_rate = 0.4
-    elite_size = 20  # Number of elite individuals to carry over
+    elite_size = population_size // 12  # Number of elite individuals to carry over
 
     # Initialize population
     population = generate_population(population_size, chessboard_size)
@@ -142,7 +135,7 @@ def genetic_algorithm(population_size=100, max_generations=100):
         individual.calculate_fitness(chessboard_size)
 
     for generation in range(max_generations):
-        # print(f"Generation {generation + 1}")
+        print(f"Generation {generation + 1}")
         # Select parents
         parents = selection(population, population_size - elite_size)
         # Create next generation
@@ -155,7 +148,7 @@ def genetic_algorithm(population_size=100, max_generations=100):
         for _ in range(population_size - elite_size):
             parent1 = random.choice(parents)
             parent2 = random.choice(parents)
-            child = crossover(parent1, parent2, chessboard_size)
+            child = crossover(parent1, parent2)
             mutate(child, mutation_rate)
             child.calculate_fitness(chessboard_size)
             new_population.append(child)
@@ -164,7 +157,7 @@ def genetic_algorithm(population_size=100, max_generations=100):
 
         # Get best individual
         best_individual = max(population, key=lambda x: x.fitness)
-        # print(f"Best Fitness: {best_individual.fitness}, Start Pos: {best_individual.start_pos}, Start Angle: {best_individual.start_angle}")
+        print(f"Best Fitness: {best_individual.fitness}, Start Pos: {best_individual.start_pos}, Start Angle: {best_individual.start_angle}")
 
     return max(population, key=lambda x: x.fitness)
 
@@ -181,6 +174,7 @@ if __name__ == '__main__':
         logging.info(f"Steps: {best.fitness}, population_size: {population_size}, max_generations: {max_generations}")
 
 
-    for polulation_size in range(500, 800, 100):
-        for max_generations in range(500, 800, 100):
-            GeneticAlgorithm(polulation_size, max_generations)
+    # for polulation_size in range(500, 800, 100):
+    #     for max_generations in range(500, 800, 100):
+    #         GeneticAlgorithm(polulation_size, max_generations)
+    GeneticAlgorithm(500, 1500)
