@@ -8,3 +8,15 @@
  [ ╵⸜  o--→  ╯╭   ⸝╵  None None]
  [None  ⸌╴   ─⸍  None None None]])
 2025-02-22 09:58:44,596 INFO Steps: 35, population_size: 500, max_generations: 1200
+
+2025-02-23 00:02:06,761 INFO Start Position: (4, 5), Start Angle: 6
+2025-02-23 00:02:06,761 INFO Chess Sequence: ['A', 'B', 'A', 'A', 'A', 'A', 'B', 'A', 'A', 'B', 'A', 'A', 'B', 'A', 'B', 'B', 'B', 'B', 'B', 'B', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C'], Flip Sequence: [True, True, True, False, True, True, True, True, True, True, True, False, True, True, True, False, False, False, False, False, False, False, False, False, False, False, True, False]
+2025-02-23 00:02:06,762 INFO
+[[None None  ⸝─   ─⸜  None None]
+ [None  ╷⸍   ╯╭   ╮╰   ⸌╷  None]
+ [ ╯╭    +    +    +    +   ╮╰ ]
+ [  +   ╵⸜   ╮╰   ╮╰   ╮╰    + ]
+ [  +  None  ⸌╴    +   ╯╭   o↑ ]
+ [ ╮╰    +    +   ╯╭  None None]]
+2025-02-23 00:02:06,762 INFO Steps: 35, population_size: 500, max_generations: 1500
+

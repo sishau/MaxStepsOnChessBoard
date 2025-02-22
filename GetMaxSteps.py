@@ -97,10 +97,12 @@ def crossover(parent1, parent2):
 
     # Partial chess sequence crossover (swap middle section)
     # Ensure chess sequence constraints are maintained
-    cross_point1 = random.randint(0, len(parent1.chess_seq) - 1)
-    cross_point2 = random.randint(cross_point1, len(parent1.chess_seq))
-    child_chess_seq = parent1.chess_seq[:cross_point1] + parent2.chess_seq[cross_point1:cross_point2] + parent1.chess_seq[cross_point2:]
-    child_flip_seq = parent1.flip_seq[:cross_point1] + parent2.flip_seq[cross_point1:cross_point2] + parent1.flip_seq[cross_point2:]
+    parent1_valid_length = min(parent1.fitness, len(parent1.chess_seq))
+    parent2_valid_length = min(parent2.fitness, len(parent2.chess_seq))
+    cross_point1 = random.randint(0, parent1_valid_length)
+    cross_point2 = random.randint(0, parent2_valid_length)
+    child_chess_seq = parent1.chess_seq[:cross_point1] + parent2.chess_seq[:cross_point2]
+    child_flip_seq = parent1.flip_seq[:cross_point1] + parent2.flip_seq[:cross_point2]
 
     # Repair the chess sequence to maintain counts (this is a placeholder for actual repair logic)
     child_chess_seq, child_flip_seq = repair_chess_seq(child_chess_seq, child_flip_seq)
@@ -127,7 +129,7 @@ def mutate(individual, mutation_rate):
 def genetic_algorithm(population_size=100, max_generations=100):
     chessboard_size = (6, 6)
     mutation_rate = 0.4
-    elite_size = population_size // 12  # Number of elite individuals to carry over
+    elite_size = population_size // 10  # Number of elite individuals to carry over
 
     # Initialize population
     population = generate_population(population_size, chessboard_size)
