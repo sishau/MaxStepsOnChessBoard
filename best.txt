@@ -1,0 +1,10 @@
+2025-02-22 09:58:44,595 INFO Start Position: (1, 4), Start Angle: 4
+2025-02-22 09:58:44,595 INFO Chess Sequence: ['B', 'A', 'A', 'B', 'B', 'A', 'B', 'A', 'B', 'A', 'A', 'B', 'B', 'A', 'B', 'A', 'B', 'A', 'B', 'A', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C'], Flip Sequence: [True, True, False, True, True, False, True, False, True, False, False, False, False, True, False, False, False, False, False, False, False, False, False, False, False, False, False, True]
+2025-02-22 09:58:44,595 INFO ChessBoard((6, 6):
+[[ ╯╭    +   ─⸜  None  ╯╭   ╮╰ ]
+ [  +   ╯╭   ╮╰   ⸌╷    +    + ]
+ [ ╮╰    +    +    +    +   ╯╭ ]
+ [ ╷⸍   ╮╰    +    +   ╯╭  None]
+ [ ╵⸜  o--→  ╯╭   ⸝╵  None None]
+ [None  ⸌╴   ─⸍  None None None]])
+2025-02-22 09:58:44,596 INFO Steps: 35, population_size: 500, max_generations: 1200
