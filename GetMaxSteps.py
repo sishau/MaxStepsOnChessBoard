@@ -130,6 +130,8 @@ def genetic_algorithm(population_size=100, max_generations=100):
     chessboard_size = (6, 6)
     mutation_rate = 0.4
     elite_size = population_size // 10  # Number of elite individuals to carry over
+    best_fitness = 0
+    best_Gen =  0
 
     # Initialize population
     population = generate_population(population_size, chessboard_size)
@@ -137,7 +139,7 @@ def genetic_algorithm(population_size=100, max_generations=100):
         individual.calculate_fitness(chessboard_size)
 
     for generation in range(max_generations):
-        print(f"Generation {generation + 1}")
+        # print(f"Generation {generation + 1}")
         # Select parents
         parents = selection(population, population_size - elite_size)
         # Create next generation
@@ -146,6 +148,7 @@ def genetic_algorithm(population_size=100, max_generations=100):
         sorted_population = sorted(population, key=lambda x: x.fitness, reverse=True)
         elites = sorted_population[:elite_size]
         new_population.extend(elites)
+
         # Generate offspring
         for _ in range(population_size - elite_size):
             parent1 = random.choice(parents)
@@ -159,24 +162,27 @@ def genetic_algorithm(population_size=100, max_generations=100):
 
         # Get best individual
         best_individual = max(population, key=lambda x: x.fitness)
-        print(f"Best Fitness: {best_individual.fitness}, Start Pos: {best_individual.start_pos}, Start Angle: {best_individual.start_angle}")
+        # print(f"Best Fitness: {best_individual.fitness}, Start Pos: {best_individual.start_pos}, Start Angle: {best_individual.start_angle}")
+        if best_individual.fitness > best_fitness:
+            best_fitness = best_individual.fitness
+            best_Gen = generation
 
+    print(f"Best Fitness: {best_fitness}, Generation: {best_Gen} / {max_generations}, population size: {population_size}")
     return max(population, key=lambda x: x.fitness)
 
 if __name__ == '__main__':
     import logging
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
-    def GeneticAlgorithm(population_size, max_generations):
-        best = genetic_algorithm(population_size, max_generations)
-        logging.info(f"Start Position: {best.start_pos}, Start Angle: {best.start_angle}")
-        # Optionally print chess sequence and flip sequence
-        logging.info(f"Chess Sequence: {best.chess_seq}, Flip Sequence: {best.flip_seq}")
-        logging.info(best.board)
-        logging.info(f"Steps: {best.fitness}, population_size: {population_size}, max_generations: {max_generations}")
+    file_path = "./best.txt"
+    best_fitness = 0
+    # best, index = GeneticAlgorithm(100, 1000)
+    # print(f"best fitness: {best.fitness}, index: {index} / 1000 \n {best.board}")
+    for population_size in range(1000, 5000, 500):
+        for max_generations in range(1500, 5000, 200):
+            best = genetic_algorithm(population_size, max_generations)
+            if best.fitness > best_fitness:
+                best_fitness = best.fitness
+                with open(file_path, "a", encoding="utf-8") as f:
+                    f.write(str(best.board) + "\n")
+                    f.write(str(best.fitness) +" \n\n")
 
-
-    # for polulation_size in range(500, 800, 100):
-    #     for max_generations in range(500, 800, 100):
-    #         GeneticAlgorithm(polulation_size, max_generations)
-    GeneticAlgorithm(500, 1500)
